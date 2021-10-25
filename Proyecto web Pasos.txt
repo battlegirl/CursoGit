@@ -1,0 +1,471 @@
+-Curso con el que empecé Django muy bueno!!----
+
+https://www.youtube.com/watch?v=7XO1AzwkPPE
+
+Curso Django. 
+de pildorasinformaticas excelente!! 
+
+
+1 Paso 1): se crea un proyecto
+para crear un proyecto:
+en cmd
+
+1)ubicarme en la carpeta destino en cd C:.....
+2)luego ejecutar la sentencia: django-admin startproject nombre_proyecto ((no puede ser un nombre con espacios))
+
+
+2 Paso 2):Se crea una app ""la cuál crea el modelo, las vistas, etc""
+para crear una app dentro de un proyecto
+en cmd
+
+1)ubicarme en la carpeta destino donde está el archivo manage.py en cd C:.....
+2)python manage.py startapp nombre_app (este nombre tiene que ser distinto al nombre_proyecto)
+
+
+Nota: un proyecto puede tener mas de una aplicación, es decir se puede crear mas de una app para un mismo proyecto. EN ese
+caso lo que es conveniente hacer es generar un archivo urls.py en cada app y la urls.py del proyecto debe linkiar a cada urls
+de cada app (video 28 del curso de Django pildoras informáticas)
+
+
+
+3) en views creo tantas funciones como páginas quiero por ejemplo: home, contacto, servicios, etc...
+4) creo una urls.py para cada app que tengo y ahí pongo 
+
+from django.urls import path
+from ProyectowebApp import views
+
+urlpatterns = [
+
+    path('', views.home, name='Home'),
+    path('servicios', views.servicios, name='Servicios'),
+    path('tienda', views.tienda, name='Tienda'),
+    path('blog', views.blog, name='Blog'),
+    path('contacto', views.contacto, name='Contacto'),
+]
+
+
+5) en la urls principal linqueo a esta urls de la app
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('ProyectowebApp.urls')), #aquí enlaza con la urls de la app y no le pongo nada en las comillas para que
+no tenga que poner en el buscador el directorio de 'ProyectowebApp' osea lo omito
+
+]
+
+
+6)creo un nuevo directorio en la app llamado templates donde voy a crear cada página html para cada path, es decir una
+página por servicios, otra por tienda.html, etc...
+
+7) en settings.py registro la app: 
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'ProyectowebApp',
+]
+
+
+8) en views modifico cada función para que me renderice el template/plantilla
+
+def home(request):
+
+    return render(request, "ProyectowebApp/home.html")
+
+
+
+9)Formato sitio web con Bootstrap
+Bootstrap: es un Framework CSS creado por Twitter en 2011, permite dar formato a sitio web con librerìas CSS predefinidas
+- Permite crear sitios web  "responsive" es compatible con muchos navegadores
+ir a la página de bootstrap para ver bien cómo se maneja.
+Permite el uso de LESS(herramienta que agarega funcionalidades a CSS)
+
+
+
+10)Para agregar los archivos de bootstrap a mi app crear un directorio que por convención se lo nombra stactic, a su vez
+crear otra capeta dentro que se llame ProyectowebApp osea el mismo nombre de mi proyecto (así se hace por convención). 
+Dentro de esta carpeta ProyectowebApp irán las carpetas de bootstrap css, img y vendor (que las facilitó el de píldoras inf.)
+
+en píldoras informáticas está el curso de laravel donde enseña bootstrap   https://www.pildorasinformaticas.es/course/laravel/curriculum/
+
+
+11) Descomprimir los archivos que facilitó el de píldoras (css, img y vendor) en la carpeta ProyectowebApp  de la carpeta
+stactic
+
+12) Formato del sitio con Bootstrap
+en gestion.css está el formato que me dio el de píldoras
+en la home.html poner:
+
+{% load static %} <!-- esto dice que la home cargará todos los contenidos de la carpeta static   -->
+una vez que hago todas las modificaciones en el home comienzo a trabajar con herencia de plantillas
+
+
+13)creo una plantilla que voy a llamar base.html
+va a contener el head, la barra de navegación navbar y el footer
+
+14) el home.html solo va a tener el 'heading' y el contenido medio 'message'
+y va a heredar el base.html poniendo al principio esta sentencia:
+
+#así heredo:
+{% extends "ProyectowebApp/base.html" %}  o como lo tengo yo {% extends "base.html" %}
+
+#luego le digo que cargue todo el contenido de la carpeta static que tiene las imágenes
+{% load static %}
+
+#por último indico que heading y message tiene que estar dentro de block content 
+{% block content %}
+
+-
+-
+-
+-
+{% endblock %}
+
+
+
+15)ahora corrijo la url de las barras de navegación ((ojo: fijarme cómo están las url registradas en url.py ))
+poner en cada url:
+href="{% url 'Home'%}"
+
+
+
+NOTA: en caso que no se actulice las CSS borrar las cache del navegador y reiniciar el servidor runserver
+
+
+16) VOY A trabajar la página servicios como una app para poderlo reutilizar:
+python manage.py startapp servicios
+
+16.1) tengo que registrar la app dentro del archivo settings de mi proyecto
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'ProyectowebApp',
+    'servicios',
+]
+
+16.2) voy a administrar los tipos de servicios desde el panel de administraciòn a través de modelo y voy a hacer un mapeo
+ORM mediante el modelo.py que se va a encontrar en la misma carpeta de la app servicios
+
+class Servicio(models.Model):
+    #campos del modelo servicio
+    titulo= models.CharField(max_length=50)
+    contenido=models.CharField(max_length=50)
+    imagen= models.ImageField()
+    #created y updated sirven para ordenar por fechas y actualización ((se suelen utilizar así))
+    created= models.DateTimeField(auto_now_add=True)
+    updated=models.DateTimeField(auto_now_add= True)
+
+
+cuando creamos un modelo podemos especificar una serie de características que se denominan meta son opciones adicionales
+que le puedo agregar a mi modelo
+
+
+16.3) para que el modelo anterior tenga efecto debo correr los siguientes comandos:
+python manage.py makemigrations ((si me da un error puede ser por la falta de una liberia que es Pillow para imágenes, instalar antes)) 
+luego tengo que migrar con el siguiente comando:
+python manage.py migrate
+
+luego esta migración se refleja en la BD DB.sqlite3
+
+17) Registrar la app en el panel de administración osea en http://127.0.0.1:8000/admin/ pero antes crear un superusuario
+
+17.1) Creo un superusuario
+
+python manage.py createsuperuser
+Now Django will prompt you to enter the details, enter your desired details and hit enter.
+
+Username (leave blank to use 'admin'): admin
+Email address: admin@xyz.com
+Password: ********
+Password (again): ********
+
+
+que es para esta app:
+Username: admin
+email:velialpez@4gmail.com
+pass:12345
+
+17.2) en el archivo admin.py de mi app tengo que registrar mi app servicios
+por lo que tengo que importar del archivo models (que di de alta la clase servicio) y como está en el mismo directorio
+tengo que indicarlo de la siguiente manera:
+
+from .models import Servicio
+
+y registro el modelo:
+
+admin.site.register(Servicio)
+
+Y ya en la página http://127.0.0.1:8000/admin/ aparece la tabla Servicios para administrar desde el navegador
+solo aparrecen los campos: título, contenido e imagen, para que aparezcan los campos created y updated hacer:
+en admin.py poner :
+
+class ServicioAdmin(admin.ModelAdmin):
+    readonly_fields = ('created', 'updated')
+
+admin.site.register(Servicio, ServicioAdmin)
+
+
+
+17.3) Ahora voy a configurar mi panel de administarción del navegador en español
+
+en settings.py del proyecto poner
+
+
+18)si en el panel de administración agrego alguna imágen, no la voy a poder visualizaar porque en el archivo settings.py 
+la variable DEBUG está en True, recién cuando suba todo el proyecto a un servidor en producción la tengo que poner en 
+False, pero también hay otro problema y que los archivos media se agregan en el proyecto de forma desorganizada, por lo
+que voy a agregar una nueva carpeta al proyecto y la voy a llamar media y tengo que decirle a DJango que busque los 
+archivos en esa carpeta media
+
+Por lo que en settings.py voy a agregar una url pública de archivos media = al nombre de la carpeta '/media/'
+MEDIA_URL='/media/'
+
+y ahora tengo que decirle a django donde vaya a buscarla:
+MEDIA_ROOT = (BASE_DIR / 'media')
+
+y en models.py voy a la clase servicio y modifico el siguiente campo:
+imagen= models.ImageField(upload_to='servicios')
+aquí le digo que suba la imágen en la carpeta servicios que va a estar dentro de la carpeta media
+
+-Por último tengo que registrar la nueva URL donde está la imágen para que la busque ahí cuando la quiera acceder. por lo
+que en el archivo url.py de la app voy poner:
+
+from django.conf import settings  #desde configuración agrego settings
+from django.conf.urls.static import static  #desde la url static agrego static
+
+y abajo agrego lo siguiente:
+urlpatterns+=static(settings.MEDIA_URL, document_root= settings.MEDIA_ROOT) 
+#a urlpatterns le agregue utilizando el + static(medi_URL y también indicarle la raíz con document_root)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+en el archivo models.py es donde se crean las DB
+
+
+
+
+
+
+
+
+PARA INICIALIZAR EL SERVICIO DE manage.py poner
+-python manage.py runserver
+
+
+NOTAS:
+para chequear si la app está sin error poner este comando en la carpeta correspondiente de la terminal
+python manage.py check gestionPedidos
+
+
+para crear la DB
+en la terminal o cmd 
+
+ubicarme en la carpeta destino donde está el archivo manage.py
+1)python manage.py migrate
+2)python manage.py makemigrations
+hasta aquí crea un DB vacía sin tablas para decirle que cree las tablas le tengo que decir a Django que genere el código sql 
+3)python manage.py sqlmigrate nombre_app y nro_migracion_quedioanteriormente:0001_initial  
+con lo que genere en el paso anterior hay que decirle que ese código sql lo utilice en la DB creada de sqlite con el siguiente comando
+4)python manage.py migrate
+Y crea muchas tablas mas que son necesarias para que Django funcione
+
+
+-para poder manipular los datos de la DB sqlite desde consola: ((no es la forma mas òptima, lo mejor es por formulario))
+en un futuro cuando tengamos un formulario hecha en una plantilla con django voy a tener que utilizar estas instrucciones en la vista correspondiente;
+1)ubicarme en la carpeta destino donde está el archivo manage.py
+2)python manage.py shell 
+3)luego se importa el modelo con el que vamos a trabajar: from nombre_proyecto.models import nombre_clase ejemplo: from gestionPedidos.models import Articulos
+4)para ingresar un registro: art=Articulos(nombre='mesa', seccion='decoración', precio=9000)
+5)para ejecutar la instrucción sql anterior poner: art.save()
+para ingresar otro registro:
+art2=Articulos(nombre='camisa', seccion='confección', precio=100)
+art2.save()
+6) otra forma de insertar en 1 sola instrucción es: art3=Articulos.objects.create(nombre='taladro', seccion='ferretería', precio=80)
+
+
+Para actualizar un registro:
+1)utilizo la variable anterior art.precio=95
+2)art.save()
+
+Para borrar un registro:
+1)creo un variable art5=Articulos.objects.get(id=2)
+2)art5.delete()
+
+Para consultar:
+1)utilizo una variable y guardo una query en esa consulta: 
+Lista=Articulos.objects.all()
+2) para ver: Lista
+o Lista.query.__str__()  que muestra la instrucción Select generada
+
+
+----------------------------------
+
+
+Para trabajar Django con postgresql
+
+1) Instalar postgresql
+2) crear la DB en postgresql
+3)conectar la DB con django, para eso instalar la librería que no viene instalada por defecto en django:
+  3.1-psycopg2
+  3.2-ubicarme en el directorio de mi proyecto: C:\Python\ProyectosDjango\Proyecto online\ProyectoOnline
+  3.3-introducir la siguiente sentencia: pip install psycopg2
+4)ahora cambiar la configuración en el archivo settings.py para que django trabaje con esta BD:
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'articulosclientes',
+        'USER': 'postgres',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost',
+        'DATABASE_PORT': '5432',
+    }
+}
+	
+5) Hacer las migraciones
+Primero asegurarme que el servicio runserver esté andando es decir poner: python manage.py runserver
+-ubicarme en el proyecto C:\Python\ProyectosDjango\Proyecto online\ProyectoOnline
+-python manage.py makemigrations
+luego:
+-python manage.py migrate
+
+
+-Para introducir registros a una tabla se hace:
+1) se abre el shell ubicarme en mi proyecto y: python manage.py shell 
+2)importo el modelo: from gestionPedidos.models import Clientes
+3)creo la variable: cli=Clientes(nombre='Juan', direccion='Mi casa', cel='123452')
+4)cli.save()
+
+
+-Para consultar registros a una tabla se hace, aunque lo siguiente devuelve una lista:
+1) se abre el shell ubicarme en mi proyecto y: python manage.py shell 
+2)importo el modelo: from gestionPedidos.models import Articulos
+3)Articulos.objects.filter(seccion='deportes')
+
+Pero la función __str__ me va a devolver el contenido de los registros: (la voy a definir en el models.py luego
+de la clase definida en este caso de Articulos)
+Y al hacer este cambio en el modelo, tengo que volver a hacer las migraciones
+1)(si estoy en el shell tengo que salir poniendo: exit())
+Y volver a poner todo:
+2)importo el modelo: from gestionPedidos.models import Articulos
+3)Articulos.objects.filter(seccion='deportes')
+y para hacer una consulta con 2 criterios:
+Articulos.objects.filter(nombre ='mesa', seccion='decoración')
+
+o para hacer una consulta mayor que > no se puede usar el símbolo > porque python lo utiliza para otra cosa, por lo que hay que usar gte creo que viene de greatest
+Articulos.objects.filter(nombre ='mesa', precio__gte=100)  
+Y para hacer una consulta de menor se usa __lte=    (de leaster)
+o entre valores
+Articulos.objects.filter(nombre ='mesa', precio__range(10,100)  **pero no sale ver bien si hace falta
+y para ordenar
+Articulos.objects.filter(precio__gte=50).order_by('precio')
+y para ordenarlos de mayor a menor solo poner un signo - delante de precio
+Articulos.objects.filter(precio__gte=50).order_by('-precio')
+
+
+
+
+
+
+Creación de un panel de administración en Django
+NOTAS:
+-Importante: se debe crear el proyecto con startproject _____ para que Django cree automáticamente el panel de administración
+-en settings.py ya viene la info del panel en la parte de INSTALLED_APPS = [....
+- en la urls.py ya viene por defecto la url del panel de administración de Django
+- cuando ejecuto python manage.py runserver me da la ip dirección http://127.0.0.1:8000/ que corresponde a la instalción de Django a nuestro sitiio web
+y si agrego a esa ip /admin es decir http://127.0.0.1:8000/admin me da el panel de administración de Django pero poder accederlo debo crear el superusuario y la clave
+
+Por lo que voy a crearlo 
+1)detengo el servidor, luego ingreso al directorio de instalación (donde está ubicado el archivo manage.py)y pongo:
+C:\Python\ProyectosDjango\Proyecto online\ProyectoOnline> python manage.py createsuperuser
+(por lo que me pide una serie de datos, me sugiere un usuario o puedo modificarlo, me pide email, y pass) y para probar que acceso como superusuario debo volver a correr
+el servidor
+en este ejemplo usu: velia pass: 1234
+y si vuelvo a acceder al panel de Django mediante:http://127.0.0.1:8000/admin ya ingreso con la contraseña y puedo agregar nuevos usuarios o grupos, etc
+
+
+
+en el archivo admin.py se codifica todo lo necesario para manipular las tablas
+Y cada vez que se haga un cambio al modelo hay que volver a hacer una migración:
+-python manage.py makemigrations 
+-python manage.py migrate
+
+
+-------------------------------------------
+
+Para enviar un mail a través de smtp configurar en settings.py (tomo a gmail para la configuración)
+
+#Aquí configuro el email que envío a través de smtp. Igual toda la info está en la pag de django
+EMAIL_BACKEND= "django.core.mail.backends.smtp.EmailBackend"
+#parámetros del correo gmail
+EMAIL_HOST="smtp.gmail.com"
+
+# EMAIL_USE_TLS y hay otro que termina en csl  protocolo de seguridad
+EMAIL_USE_TLS=True
+#puerto
+EMAIL_PORT=587
+EMAIL_HOST_USER="velialpez@gmail.com"
+EMAIL_HOST_PASSWORD="xxxxx" #pongo la contraseña
+
+
+Luego para ver si funciona en la consola poner lo siguiente
+1) python manage.py shell
+2) from django.core.mail import send_mail
+3) send_mail('prueba de asunto','este sería el mensaje', 'velialpez@gmail.com', ['velialpez@gmail.com'], fail_silently=False)
+
+y si me da un error voy al gmail y modifico el acceso a app menos seguras (pongo en Allow = ON)
+
+mas info en
+https://www.fullstackpython.com/django-core-mail-send-mail-examples.html 
+ https://docs.djangoproject.com/en/dev/topics/email/
+
+en la terminal para salir se pone 
+exit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
