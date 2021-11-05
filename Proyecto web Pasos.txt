@@ -1,5 +1,6 @@
 -Curso con el que empecé Django muy bueno!!----
 modificado el 29/10/
+modificado el 05/11/2021
 
 https://www.youtube.com/watch?v=7XO1AzwkPPE
 
